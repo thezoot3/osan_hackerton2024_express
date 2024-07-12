@@ -3,6 +3,9 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import GeminiFlash from './lib/VertexAI/GeminiFlash.js'
 import { GeminiRequest } from './lib/VertexAI/VertexAI.js'
+import inspect from './handler/inspect.js'
+import cors from 'cors'
+import map from './handler/map.js'
 
 export function CheckPerformance(func: () => Promise<any>): Promise<[any, number]> {
     return new Promise((resolve, reject) => {
@@ -17,13 +20,13 @@ export function CheckPerformance(func: () => Promise<any>): Promise<[any, number
         }
     })
 }
-
 const app = Express()
-
 app.use(Express.json())
 app.use(helmet())
 app.use(morgan('dev'))
-
+app.use(cors())
+app.use('/inspect', inspect)
+app.use('/map', map)
 app.get('/', (req: Express.Request, res: Express.Response) => {
     const vertexAI = new GeminiFlash()
     vertexAI.instruction =
@@ -39,5 +42,4 @@ app.get('/', (req: Express.Request, res: Express.Response) => {
         console.log(e)
     }
 })
-
-app.listen(3000)
+app.listen(8080)

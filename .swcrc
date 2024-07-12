@@ -5,9 +5,9 @@
       "tsx": false,
       "decorators": true,
       "dynamicImport": true
+       "baseUrl": "./src"
     },
     "target": "es2020"
-
   },
 
 }
