@@ -61,7 +61,8 @@ router.get('/prompt/:imageID', async (req, res) => {
                     return
                 }
             } catch (e) {
-                res.status(500).end(e)
+                res.status(500).end()
+                console.log(e)
                 return
             }
         }
