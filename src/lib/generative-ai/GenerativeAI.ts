@@ -11,24 +11,22 @@ export interface GeminiResponse {
 }
 
 export default class GeminiFlash {
-    constructor() {
-        this.generativeModel = genAI.getGenerativeModel({
-            model: this.geminiModel,
-            safetySettings: [
-                {
-                    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-                    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                },
-            ],
-            systemInstruction: this.instruction,
-        })
-    }
-    generativeModel: GenerativeModel
+    constructor() {}
     geminiModel = 'gemini-1.5-flash'
     instruction: string | undefined
     sendRequest(fileBuffer: Buffer, mimeType: string, textPrompt: string): Promise<GeminiResponse> {
         return new Promise(async (resolve, reject) => {
             try {
+                const generativeModel = genAI.getGenerativeModel({
+                    model: this.geminiModel,
+                    safetySettings: [
+                        {
+                            category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                        },
+                    ],
+                    systemInstruction: this.instruction,
+                })
                 const image = {
                     inlineData: {
                         data: fileBuffer.toString('base64'),
@@ -36,7 +34,7 @@ export default class GeminiFlash {
                     },
                 }
                 const [result, latency] = (await CheckPerformance(async () => {
-                    return await this.generativeModel.generateContent([textPrompt, image])
+                    return await generativeModel.generateContent([textPrompt, image])
                 })) as [GenerateContentResult, number]
                 const text = result.response.text()
                 if (text.length > 0) {
