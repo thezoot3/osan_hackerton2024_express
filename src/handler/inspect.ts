@@ -1,8 +1,5 @@
 import express from 'express'
-import CloudStorage from '../lib/CloudStorage/CloudStorage.js'
-import crypto from 'crypto'
 import multer from 'multer'
-import { defaultBucket } from '../lib/CloudStorage/environment.js'
 import GeminiFlash from '../lib/generative-ai/GenerativeAI.js'
 import instruction from '../prompt/instruction.js'
 import garbage from '../prompt/garbage.js'
@@ -16,18 +13,18 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         const randomUUID = uuidv4() // 랜덤 UUID 생성
         const extension = file.mimetype.split('/')[1] // 확장자 추출
-        cb(null, `${randomUUID}.jpg`) // 파일 이름 생성 (UUID.확장자)
+        cb(null, `${randomUUID}.webp`) // 파일 이름 생성 (UUID.확장자)
     },
 })
 const ml = multer({ storage })
 
 router.post('/upload', ml.single('image'), async (req, res) => {
-    if (req.file?.mimetype === 'image/jpeg') {
+    if (req.file?.mimetype === 'image/webp') {
         res.status(201)
             .json({ imageID: req.file.filename.split('.')[0] })
             .end()
     } else {
-        res.status(400).json({ error: 'Accept only jpeg' }).end()
+        res.status(400).json({ error: 'Accept only webp' }).end()
     }
 })
 router.get('/prompt/:imageID', async (req, res) => {
@@ -35,8 +32,8 @@ router.get('/prompt/:imageID', async (req, res) => {
         try {
             const vertexAI = new GeminiFlash()
             vertexAI.instruction = instruction.instruction.join(' ')
-            const buffer = await fs.readFile(`./uploads/${req.params.imageID}.jpg`)
-            const aiResponse = await vertexAI.sendRequest(buffer, 'image/jpeg', instruction.bodyText.join(' '))
+            const buffer = await fs.readFile(`./uploads/${req.params.imageID}.webp`)
+            const aiResponse = await vertexAI.sendRequest(buffer, 'image/webp', instruction.bodyText.join(' '))
             console.log(aiResponse.response.text)
             const output = JSON.parse(aiResponse.response.text.replace('```json', '').replace('```', ''))
             if (output.length > 0) {
