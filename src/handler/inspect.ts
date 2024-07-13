@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         const randomUUID = uuidv4() // 랜덤 UUID 생성
         const extension = file.mimetype.split('/')[1] // 확장자 추출
-        cb(null, `${randomUUID}.${extension}`) // 파일 이름 생성 (UUID.확장자)
+        cb(null, `${randomUUID}.jpg`) // 파일 이름 생성 (UUID.확장자)
     },
 })
 const ml = multer({ storage })
