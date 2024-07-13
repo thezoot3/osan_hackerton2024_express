@@ -23,7 +23,9 @@ const ml = multer({ storage })
 
 router.post('/upload', ml.single('image'), async (req, res) => {
     if (req.file?.mimetype === 'image/jpeg') {
-        res.status(201).json({ imageID: req.file.filename }).end()
+        res.status(201)
+            .json({ imageID: req.file.filename.split('.')[1] })
+            .end()
     } else {
         res.status(400).json({ error: 'Accept only jpeg' }).end()
     }
