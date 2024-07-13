@@ -26,7 +26,7 @@ export default class GeminiFlash {
     generativeModel: GenerativeModel
     geminiModel = 'gemini-1.5-flash'
     instruction: string | undefined
-    sendRequest(fileBuffer: Buffer, mimeType: string, text: string): Promise<GeminiResponse> {
+    sendRequest(fileBuffer: Buffer, mimeType: string, textPrompt: string): Promise<GeminiResponse> {
         return new Promise(async (resolve, reject) => {
             try {
                 const image = {
@@ -36,7 +36,7 @@ export default class GeminiFlash {
                     },
                 }
                 const [result, latency] = (await CheckPerformance(async () => {
-                    return await this.generativeModel.generateContent([text, image])
+                    return await this.generativeModel.generateContent([textPrompt, image])
                 })) as [GenerateContentResult, number]
                 const text = result.response.text()
                 if (text.length > 0) {
