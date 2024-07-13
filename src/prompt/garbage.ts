@@ -1,5 +1,6 @@
 export default {
     itemTypes: [
+        '종이팩',
         '살균팩',
         '우유팩',
         '주스팩',
