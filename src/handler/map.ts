@@ -25,7 +25,7 @@ router.get('/sellers/:sellerId', async (req, res) => {
 router.get('/cloth/abstract', async (req, res) => {
     const arr = cloth.map((r) => {
         return {
-            name: r.location,
+            name: r.name,
             lat: r.lat,
             lng: r.lng,
         }
