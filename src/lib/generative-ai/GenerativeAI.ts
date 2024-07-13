@@ -2,41 +2,12 @@ import { genAI } from './environment.js'
 import { HarmCategory, HarmBlockThreshold, GenerativeModel, Part, GenerateContentResult } from '@google/generative-ai'
 import { CheckPerformance } from '../../index.js'
 
-export type GeminiRequestMineType = 'image/jpeg' | 'image/png' | 'image/webp'
-export class GeminiRequest {
-    partList: any[]
-    constructor() {
-        this.partList = []
-    }
-    addMedia(url: string, mimeType: GeminiRequestMineType) {
-        this.partList.push({
-            fileUri: url,
-            mimeType: mimeType,
-        })
-        return this
-    }
-    addText(text: string) {
-        this.partList.push({ text })
-        return this
-    }
-}
 export interface GeminiResponse {
     usedToken: number
     latency: number
     response: {
         text: string
     }
-}
-export function ParseGeminiRequest(req: GeminiRequest): Array<Part> {
-    return req.partList.map((item) => {
-        if ('fileUri' in item) {
-            return {
-                fileData: item,
-            }
-        } else {
-            return item
-        }
-    })
 }
 
 export default class GeminiFlash {
@@ -48,22 +19,6 @@ export default class GeminiFlash {
                     category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
                     threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
                 },
-                {
-                    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-                    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                },
-                {
-                    category: HarmCategory.HARM_CATEGORY_UNSPECIFIED,
-                    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                },
-                {
-                    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-                    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                },
-                {
-                    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-                    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                },
             ],
             systemInstruction: this.instruction,
         })
@@ -71,14 +26,17 @@ export default class GeminiFlash {
     generativeModel: GenerativeModel
     geminiModel = 'gemini-1.5-flash'
     instruction: string | undefined
-    sendRequest(request: GeminiRequest): Promise<GeminiResponse> {
+    sendRequest(fileBuffer: Buffer, mimeType: string, text: string): Promise<GeminiResponse> {
         return new Promise(async (resolve, reject) => {
             try {
+                const image = {
+                    inlineData: {
+                        data: fileBuffer.toString('base64'),
+                        mimeType: mimeType,
+                    },
+                }
                 const [result, latency] = (await CheckPerformance(async () => {
-                    return this.generativeModel.generateContent({
-                        contents: [{ role: 'user', parts: ParseGeminiRequest(request) }],
-                        systemInstruction: this.instruction,
-                    })
+                    return await this.generativeModel.generateContent([text, image])
                 })) as [GenerateContentResult, number]
                 const text = result.response.text()
                 if (text.length > 0) {
