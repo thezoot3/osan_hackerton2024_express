@@ -1,6 +1,6 @@
-import { genAI } from './environment'
+import { genAI } from './environment.js'
 import { HarmCategory, HarmBlockThreshold, GenerativeModel, Part, GenerateContentResult } from '@google/generative-ai'
-import { CheckPerformance } from '../../index'
+import { CheckPerformance } from '../../index.js'
 
 export type GeminiRequestMineType = 'image/jpeg' | 'image/png' | 'image/webp'
 export class GeminiRequest {
