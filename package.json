@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "forever start ./dist/src/index.js",
+    "start": "node ./dist/src/index.js",
     "build": "swc --out-dir ./dist ./src"
   },
   "author": "",
