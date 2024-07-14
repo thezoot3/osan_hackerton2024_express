@@ -4,8 +4,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node ./dist/src/index.js",
-    "build": "swc --out-dir ./dist ./src"
+    "production": "pm2 start ./dist/src/index.js -i max",
+    "build": "swc --out-dir ./dist ./src",
+    "dev": "node ./dist/src/index.js",
+    "start": "npm run build && npm run production",
+    "stop": "pm2 kill"
   },
   "author": "",
   "license": "ISC",
