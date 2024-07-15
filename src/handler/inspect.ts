@@ -6,7 +6,7 @@ import garbage from '../prompt/garbage.js'
 import * as fs from 'node:fs/promises'
 import { v4 as uuidv4 } from 'uuid'
 import jwt from 'jsonwebtoken'
-import { jwtkey } from '../secret'
+import { jwtkey } from '../secret.js'
 const router = express.Router()
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
