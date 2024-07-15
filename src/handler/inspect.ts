@@ -5,6 +5,8 @@ import instruction from '../prompt/instruction.js'
 import garbage from '../prompt/garbage.js'
 import * as fs from 'node:fs/promises'
 import { v4 as uuidv4 } from 'uuid'
+import jwt from 'jsonwebtoken'
+import { jwtkey } from '../secret'
 const router = express.Router()
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -27,6 +29,28 @@ router.post('/upload', ml.single('image'), async (req, res) => {
         res.status(400).json({ error: 'Accept only webp' }).end()
     }
 })
+router.get('/image/:imageID', async (req, res) => {
+    if (req.params.imageID) {
+        if (jwt.verify(req.cookies['jwtToken'], jwtkey)) {
+            const jwtPayload = jwt.decode(req.cookies['jwtToken'])
+            //@ts-ignore
+            if (jwtPayload['imageID'] === req.params.imageID) {
+                try {
+                    res.sendFile(`./uploads/${req.params.imageID}.webp`)
+                    res.end()
+                } catch (err) {
+                    res.status(500).end()
+                }
+            } else {
+                res.status(401).end()
+            }
+        } else {
+            res.status(401).end()
+        }
+    } else {
+        res.status(400).end()
+    }
+})
 router.get('/prompt/:imageID', async (req, res) => {
     if (req.params.imageID) {
         try {
@@ -45,6 +69,8 @@ router.get('/prompt/:imageID', async (req, res) => {
                         return garbage.itemSpecific[index].name
                     }
                 })
+                const jwtToken = jwt.sign({ imageID: req.params.imageID }, jwtkey)
+                res.cookie('jwtToken', jwtToken)
                 res.json({ result: returnArray }).status(200).end()
                 return
             } else {
