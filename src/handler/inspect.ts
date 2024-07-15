@@ -30,13 +30,14 @@ router.post('/upload', ml.single('image'), async (req, res) => {
     }
 })
 router.get('/image/:imageID', async (req, res) => {
-    if (req.params.imageID) {
+    const id = req.params.imageID.split('.')[0]
+    if (id) {
         if (jwt.verify(req.cookies['jwtToken'], jwtkey)) {
             const jwtPayload = jwt.decode(req.cookies['jwtToken'])
             //@ts-ignore
-            if (jwtPayload['imageID'] === req.params.imageID) {
+            if (jwtPayload['imageID'] === id) {
                 try {
-                    res.sendFile(`./uploads/${req.params.imageID}`)
+                    res.sendFile(`./uploads/${id}.webp`)
                     res.end()
                 } catch (err) {
                     res.status(500).end()
