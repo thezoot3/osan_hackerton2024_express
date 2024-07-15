@@ -36,7 +36,7 @@ router.get('/image/:imageID', async (req, res) => {
             //@ts-ignore
             if (jwtPayload['imageID'] === req.params.imageID) {
                 try {
-                    res.sendFile(`./uploads/${req.params.imageID}.webp`)
+                    res.sendFile(`./uploads/${req.params.imageID}`)
                     res.end()
                 } catch (err) {
                     res.status(500).end()
