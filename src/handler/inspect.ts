@@ -42,22 +42,16 @@ router.get('/prompt/:imageID', async (req, res) => {
                 const buffer = await fs.readFile(`./uploads/${req.params.imageID}.webp`)
                 const aiResponse = await vertexAI.sendRequest(buffer, 'image/webp', instruction.bodyText.join(' '))
                 const output = JSON.parse(aiResponse.response.text.replace('```json', '').replace('```', ''))
-                if (output.length > 0) {
-                    const returnArray = (output as Array<string>).map((i) => {
-                        if (garbage.itemTypes.includes(i)) {
-                            const index = garbage.itemSpecific.findIndex((spe) => {
-                                return spe.items.includes(i)
-                            })
-                            return garbage.itemSpecific[index].name
-                        }
-                    })
-
-                    res.json({ result: returnArray }).status(200).end()
-                    return
-                } else {
-                    res.status(500).end()
-                    return
-                }
+                const returnArray = (output as Array<string>).map((i) => {
+                    if (garbage.itemTypes.includes(i)) {
+                        const index = garbage.itemSpecific.findIndex((spe) => {
+                            return spe.items.includes(i)
+                        })
+                        return garbage.itemSpecific[index].name
+                    }
+                })
+                res.json({ result: returnArray }).status(200).end()
+                return
             } else {
                 res.status(401).end()
                 return
