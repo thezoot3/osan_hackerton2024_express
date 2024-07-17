@@ -5,8 +5,7 @@ import instruction from '../prompt/instruction.js'
 import garbage from '../prompt/garbage.js'
 import * as fs from 'node:fs/promises'
 import { v4 as uuidv4 } from 'uuid'
-import jwt from 'jsonwebtoken'
-import { jwtkey } from '../secret.js'
+
 const router = express.Router()
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -22,8 +21,6 @@ const ml = multer({ storage })
 
 router.post('/upload', ml.single('image'), async (req, res) => {
     if (req.file?.mimetype === 'image/webp') {
-        const jwtToken = jwt.sign({ imageID: req.file.filename.split('.')[0] }, jwtkey)
-        res.cookie('jwtToken', jwtToken, { maxAge: 120000 })
         res.status(201)
             .json({ imageID: req.file.filename.split('.')[0] })
             .end()
@@ -34,28 +31,21 @@ router.post('/upload', ml.single('image'), async (req, res) => {
 router.get('/prompt/:imageID', async (req, res) => {
     if (req.params.imageID) {
         try {
-            const jwtPayloads = jwt.verify(req.cookies['jwtToken'], jwtkey)
-            //@ts-ignore
-            if (jwtPayloads['imageID'] === req.params.imageID) {
-                const vertexAI = new GeminiFlash()
-                vertexAI.instruction = instruction.instruction.join(' ')
-                const buffer = await fs.readFile(`./uploads/${req.params.imageID}.webp`)
-                const aiResponse = await vertexAI.sendRequest(buffer, 'image/webp', instruction.bodyText.join(' '))
-                const output = JSON.parse(aiResponse.response.text.replace('```json', '').replace('```', ''))
-                const returnArray = (output as Array<string>).map((i) => {
-                    if (garbage.itemTypes.includes(i)) {
-                        const index = garbage.itemSpecific.findIndex((spe) => {
-                            return spe.items.includes(i)
-                        })
-                        return garbage.itemSpecific[index].name
-                    }
-                })
-                res.json({ result: returnArray }).status(200).end()
-                return
-            } else {
-                res.status(401).end()
-                return
-            }
+            const vertexAI = new GeminiFlash()
+            vertexAI.instruction = instruction.instruction.join(' ')
+            const buffer = await fs.readFile(`./uploads/${req.params.imageID}.webp`)
+            const aiResponse = await vertexAI.sendRequest(buffer, 'image/webp', instruction.bodyText.join(' '))
+            const output = JSON.parse(aiResponse.response.text.replace('```json', '').replace('```', ''))
+            const returnArray = (output as Array<string>).map((i) => {
+                if (garbage.itemTypes.includes(i)) {
+                    const index = garbage.itemSpecific.findIndex((spe) => {
+                        return spe.items.includes(i)
+                    })
+                    return garbage.itemSpecific[index].name
+                }
+            })
+            res.json({ result: returnArray }).status(200).end()
+            return
         } catch (e) {
             res.status(500).end()
             console.log(e)
