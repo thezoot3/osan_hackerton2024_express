@@ -23,7 +23,7 @@ const ml = multer({ storage })
 router.post('/upload', ml.single('image'), async (req, res) => {
     if (req.file?.mimetype === 'image/webp') {
         const jwtToken = jwt.sign({ imageID: req.file.filename.split('.')[0] }, jwtkey)
-        res.cookie('jwtToken', jwtToken)
+        res.cookie('jwtToken', jwtToken, { maxAge: 120000 })
         res.status(201)
             .json({ imageID: req.file.filename.split('.')[0] })
             .end()
